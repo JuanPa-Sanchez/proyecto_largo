@@ -1,0 +1,153 @@
+#clase plataforma general
+class Plataforma:
+    def __init__(self):
+        self.usuarios = {}
+        self.cursos = {}
+
+
+    def registrar_usuario(self, tipo, id_usuario, nombre, correo, **kwargs):
+        #Validación de formato de correo
+        if "@" not in correo or "." not in correo:
+            print("Error: El correo electrónico no tiene un formato válido.")
+            return
+
+        #Validación de que el ID de usuario sea numérico (usando try-except)
+        try:
+            int(id_usuario)
+        except ValueError:
+            print("Error: El ID de usuario debe contener solo números.")
+            return
+
+        #Validación de ID único
+        if id_usuario in self.usuarios:
+            print(f"Error: El ID de usuario '{id_usuario}' ya está en uso.")
+            return
+
+        #Creación del objeto según el tipo de usuario
+        if tipo == "estudiante":
+            carnet = kwargs.get('carnet')
+            #Validación de carnet numérico
+            try:
+                int(carnet)
+            except ValueError:
+                print("Error: El carnet debe contener solo números.")
+                return
+            except TypeError:
+                print("Error: El carnet no contiene nigun numero")
+                return
+            u = Estudiante(id_usuario, nombre, correo, **kwargs)
+        elif tipo == "instructor":
+            u = Instructor(id_usuario, nombre, correo, **kwargs)
+        else:
+            print("Tipo de usuario inválido.")
+            return
+        self.usuarios[id_usuario] = u
+        print(f"Usuario {nombre} registrado exitosamente como {tipo}.")
+
+    def crear_curso(self, codigo, nombre, id_instructor):
+        if id_instructor not in self.usuarios or not isinstance(self.usuarios[id_instructor], Instructor):
+            print("Instructor no encontrado o tipo de usuario inválido.")
+            return
+        
+        instructor = self.usuarios[id_instructor]
+        c = Curso(codigo, nombre, instructor)
+        self.cursos[codigo] = c
+        print(f"Curso {nombre} creado con éxito.")
+
+    def inscribir(self, codigo_curso, id_estudiante):
+        try:
+            curso = self.cursos[codigo_curso]
+            estudiante = self.usuarios[id_estudiante]
+            if isinstance(estudiante, Estudiante):
+                curso.inscribir_estudiante(estudiante)
+            else:
+                print("Solo se pueden inscribir estudiantes.")
+        except KeyError:
+            print("Curso o estudiante no encontrado.")
+
+    def crear_evaluacion(self, codigo_curso, tipo, id_eval, titulo, ponderacion):
+        try:
+            curso = self.cursos[codigo_curso]
+            if tipo == "examen":
+                ev = Examen(id_eval, titulo, ponderacion)
+            elif tipo == "tarea":
+                ev = Tarea(id_eval, titulo, ponderacion)
+            else:
+                print("Tipo de evaluación no válido.")
+                return
+            curso.agregar_evaluacion(ev)
+        except KeyError:
+            print("Curso no encontrado.")
+
+    def registrar_calificacion(self, codigo_curso, id_eval, id_estudiante, nota):
+        try:
+            curso = self.cursos[codigo_curso]
+            evaluacion = next(ev for ev in curso.evaluaciones if ev.id_eval == id_eval)
+            evaluacion.registrar_calificacion(id_estudiante, nota)
+            print(f"Nota de {nota} registrada para el estudiante {id_estudiante} en la evaluación '{evaluacion.titulo}'.")
+        except StopIteration:
+            print("Evaluación no encontrada.")
+        except KeyError:
+            print("Curso o estudiante no encontrado.")
+
+    def mostrar_cursos(self):
+        print("--- Lista de Cursos ---")
+        for curso in self.cursos.values():
+            print(curso.mostrar_info())
+        print("-----------------------")
+
+    def mostrar_estudiantes(self, codigo_curso):
+        try:
+            curso = self.cursos[codigo_curso]
+            print(f"--- Estudiantes en el curso '{curso.nombre}' ---")
+            if not curso.estudiantes:
+                print("No hay estudiantes inscritos.")
+            for est in curso.estudiantes:
+                print(f"- {est.mostrar_info()}")
+            print("---------------------------------------------")
+        except KeyError:
+            print("Curso no encontrado.")
+    #Reporte 1: Reporte de bajo rendimiento
+    def generar_reporte_promedio_bajo(self):
+        #genera un reporte de estudiantes con promedio bajo
+        minimo = 65.0
+        print(f"--- Reporte de Estudiantes con Promedio < {minimo} ---")
+        encontrados = False
+        for curso in self.cursos.values():
+            print(f"Curso: {curso.nombre}")
+            for estudiante in curso.estudiantes:
+                promedio = curso.calcular_promedio_final(estudiante.id_usuario)
+                if promedio < minimo:
+                    encontrados = True
+                    print(f"- {estudiante.mostrar_info()} | Promedio Final: {promedio:.2f}")
+                    print("    Desglose de notas:")
+                    for evaluacion in curso.evaluaciones:
+                        nota_obtenida = evaluacion.calificaciones.get(estudiante.id_usuario, 0)
+                        estado = "Entregada" if nota_obtenida > 0 else "No entregada"
+                        print(f"    - {evaluacion.titulo} ({evaluacion.ponderacion*100:.0f}%): Nota: {nota_obtenida:.2f} ({estado})")
+    
+        if not encontrados:
+            print("No se encontraron estudiantes con promedio bajo.")
+        print("-------------------------------------------------------")
+
+    #Reporte 2: Reporte general
+    def generar_reporte_general(self):
+        #Genera un reporte con el promedio de todos los estudiantes
+        print("--- Reporte General de Estudiantes ---")
+        encontrados = False
+        for curso in self.cursos.values():
+            print(f"Curso: {curso.nombre}")
+            for estudiante in curso.estudiantes:
+                encontrados = True
+                #Llamamos a la función que calcula el promedio final del curso
+                promedio_final = curso.calcular_promedio_final(estudiante.id_usuario)
+                print(f"- {estudiante.mostrar_info()} | Promedio Final del Curso: {promedio_final:.2f}")
+                print("    Desglose de notas:")
+                for evaluacion in curso.evaluaciones:
+                    nota_obtenida = evaluacion.calificaciones.get(estudiante.id_usuario, 0)
+                    estado = "Entregada" if nota_obtenida > 0 else "No entregada"
+                    print(f"    - {evaluacion.titulo} ({evaluacion.ponderacion*100:.0f}%): Nota: {nota_obtenida:.2f} ({estado})")
+
+        if not encontrados:
+            print("No hay estudiantes inscritos en ningún curso.")
+        print("---------------------------------------")
