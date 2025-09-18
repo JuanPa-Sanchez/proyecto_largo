@@ -30,3 +30,26 @@ class Instructor(Usuario):
 
     def mostrar_info(self):
         return f"Instructor: {self.nombre}, Depto: {self.departamento}"
+    
+    #clase base evaluacion
+class Evaluacion:
+    def __init__(self, id_eval, titulo, ponderacion):
+        self.id_eval = id_eval
+        self.titulo = titulo
+        self.ponderacion = ponderacion
+        self.calificaciones = {}
+
+    def registrar_calificacion(self, id_estudiante, nota):
+        try:
+            if not 0 <= nota <= 100:
+                raise ValueError("La nota debe estar en el rango de 0 a 100.")
+            self.calificaciones[id_estudiante] = nota
+        except ValueError as e:
+            print(f"Error: {e}")
+
+    def mostrar_calificaciones(self):
+        return self.calificaciones
+
+    def calcular_nota_ponderada(self, id_estudiante):
+        # Calcula la nota del estudiante ponderada por la ponderacion de la evaluación.
+        return self.calificaciones.get(id_estudiante, 0) * self.ponderacion
