@@ -63,3 +63,36 @@ class Examen(Evaluacion):
 class Tarea(Evaluacion):
     def __init__(self, id_eval, titulo, ponderacion):
         super().__init__(id_eval, titulo, ponderacion)
+
+#clase curso
+class Curso:
+    def __init__(self, codigo, nombre, instructor):
+        self.codigo = codigo
+        self.nombre = nombre
+        self.instructor = instructor
+        self.estudiantes = []
+        self.evaluaciones = []
+
+    def inscribir_estudiante(self, estudiante):
+        if estudiante not in self.estudiantes:
+            self.estudiantes.append(estudiante)
+            print(f"Estudiante {estudiante.nombre} inscrito en el curso {self.nombre}.")
+        else:
+            print(f"Este estudiante ya está inscrito en el curso {self.nombre}.")
+
+    def agregar_evaluacion(self, evaluacion):
+        self.evaluaciones.append(evaluacion)
+        print(f"Evaluación '{evaluacion.titulo}' agregada al curso {self.nombre}.")
+
+    def mostrar_info(self):
+        return f"{self.codigo} - {self.nombre} - Instructor: {self.instructor.nombre}"
+    
+    def calcular_promedio_final(self, id_estudiante):
+        #Calcula el promedio final de un estudiante en el curso.
+        total_promedio_ponderado = 0
+        total_ponderacion = 0
+        for evaluacion in self.evaluaciones:
+            total_promedio_ponderado += evaluacion.calcular_nota_ponderada(id_estudiante)
+            total_ponderacion += evaluacion.ponderacion
+        
+        return (total_promedio_ponderado / total_ponderacion) if total_ponderacion > 0 else 0
