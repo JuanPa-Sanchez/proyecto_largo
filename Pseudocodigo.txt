@@ -1,0 +1,202 @@
+Pseudocodigo
+// =========================================================
+// Definición de Estructuras (Clases)
+// =========================================================
+
+Estructura Usuario
+    id_usuario: Cadena
+    nombre: Cadena
+    correo: Cadena
+FinEstructura
+
+Estructura Estudiante Extiende de Usuario
+    carnet: Cadena
+FinEstructura
+
+Estructura Instructor Extiende de Usuario
+    departamento: Cadena
+FinEstructura
+
+Estructura Evaluacion
+    id_eval: Cadena
+    titulo: Cadena
+    ponderacion: Real
+    calificaciones: Diccionario<Cadena, Real>
+FinEstructura
+
+Estructura Examen Extiende de Evaluacion
+    // Hereda propiedades y métodos
+FinEstructura
+
+Estructura Tarea Extiende de Evaluacion
+    // Hereda propiedades y métodos
+FinEstructura
+
+Estructura Curso
+    codigo: Cadena
+    nombre: Cadena
+    instructor: Instructor
+    estudiantes: Lista<Estudiante>
+    evaluaciones: Lista<Evaluacion>
+FinEstructura
+
+Estructura Plataforma
+    usuarios: Diccionario<Cadena, Usuario>
+    cursos: Diccionario<Cadena, Curso>
+FinEstructura
+
+// =========================================================
+// Funciones y Métodos
+// =========================================================
+
+Funcion MostrarInfoUsuario(usuario: Usuario): Cadena
+    Si usuario es Estudiante Entonces
+        Retornar "Estudiante: " + usuario.nombre + ", Carnet: " + usuario.carnet
+    Sino Si usuario es Instructor Entonces
+        Retornar "Instructor: " + usuario.nombre + ", Depto: " + usuario.departamento
+    Sino
+        Retornar usuario.id_usuario + " - " + usuario.nombre + " - " + usuario.correo
+    FinSi
+FinFuncion
+
+SubProceso RegistrarCalificacion(evaluacion: Evaluacion, id_estudiante: Cadena, nota: Real)
+    Si nota < 0 O nota > 100 Entonces
+        Escribir "Error: La nota debe estar en el rango de 0 a 100."
+    Sino
+        evaluacion.calificaciones[id_estudiante] = nota
+    FinSi
+FinSubProceso
+
+Funcion CalcularNotaPonderada(evaluacion: Evaluacion, id_estudiante: Cadena): Real
+    nota_obtenida = ObtenerValorDiccionario(evaluacion.calificaciones, id_estudiante, 0)
+    Retornar nota_obtenida * evaluacion.ponderacion
+FinFuncion
+
+Funcion CalcularPromedioFinalCurso(curso: Curso, id_estudiante: Cadena): Real
+    total_promedio_ponderado = 0
+    total_ponderacion = 0
+    Para cada evaluacion en curso.evaluaciones Hacer
+        total_promedio_ponderado = total_promedio_ponderado + CalcularNotaPonderada(evaluacion, id_estudiante)
+        total_ponderacion = total_ponderacion + evaluacion.ponderacion
+    FinPara
+    Si total_ponderacion > 0 Entonces
+        Retornar total_promedio_ponderado / total_ponderacion
+    Sino
+        Retornar 0
+    FinSi
+FinFuncion
+
+// =========================================================
+// Métodos de la Plataforma (Lógica Principal)
+// =========================================================
+
+SubProceso RegistrarUsuario(plat: Plataforma, tipo: Cadena, id_usuario: Cadena, nombre: Cadena, correo: Cadena, argumentos_extra: Diccionario)
+    // Validaciones de correo, ID numérico y unicidad
+    Si id_usuario EN plat.usuarios Entonces
+        Escribir "Error: El ID de usuario '" + id_usuario + "' ya está en uso."
+        Retornar
+    FinSi
+    // ... (otras validaciones)
+    Si tipo = "estudiante" Entonces
+        u = CrearEstudiante(id_usuario, nombre, correo, argumentos_extra['carnet'])
+    Sino Si tipo = "instructor" Entonces
+        u = CrearInstructor(id_usuario, nombre, correo, argumentos_extra['departamento'])
+    FinSi
+    plat.usuarios[id_usuario] = u
+    Escribir "Usuario " + nombre + " registrado exitosamente."
+FinSubProceso
+
+SubProceso CrearCurso(plat: Plataforma, codigo: Cadena, nombre: Cadena, id_instructor: Cadena)
+    Si id_instructor NO EN plat.usuarios O TipoDe(plat.usuarios[id_instructor]) NO ES Instructor Entonces
+        Escribir "Instructor no encontrado o tipo de usuario inválido."
+        Retornar
+    FinSi
+    instructor = plat.usuarios[id_instructor]
+    c = CrearCurso(codigo, nombre, instructor)
+    plat.cursos[codigo] = c
+    Escribir "Curso " + nombre + " creado con éxito."
+FinSubProceso
+
+SubProceso Inscribir(plat: Plataforma, codigo_curso: Cadena, id_estudiante: Cadena)
+    // Validar curso y estudiante, luego llamar al método del curso
+    curso = plat.cursos[codigo_curso]
+    estudiante = plat.usuarios[id_estudiante]
+    InscribirEstudianteEnCurso(curso, estudiante)
+FinSubProceso
+
+SubProceso CrearEvaluacion(plat: Plataforma, codigo_curso: Cadena, tipo: Cadena, id_eval: Cadena, titulo: Cadena, ponderacion: Real)
+    // Crear el objeto Examen o Tarea y agregarlo al curso
+    Si tipo = "examen" Entonces
+        ev = CrearExamen(id_eval, titulo, ponderacion)
+    Sino Si tipo = "tarea" Entonces
+        ev = CrearTarea(id_eval, titulo, ponderacion)
+    FinSi
+    AgregarEvaluacionACurso(plat.cursos[codigo_curso], ev)
+FinSubProceso
+
+SubProceso RegistrarCalificacionPlataforma(plat: Plataforma, codigo_curso: Cadena, id_eval: Cadena, id_estudiante: Cadena, nota: Real)
+    // Buscar la evaluación en el curso y registrar la nota
+    curso = plat.cursos[codigo_curso]
+    evaluacion = BuscarEvaluacionPorId(curso.evaluaciones, id_eval)
+    RegistrarCalificacion(evaluacion, id_estudiante, nota)
+FinSubProceso
+
+SubProceso MostrarCursos(plat: Plataforma)
+    Para cada curso en ValoresDe(plat.cursos) Hacer
+        Escribir curso.nombre
+    FinPara
+FinSubProceso
+
+SubProceso GenerarReportePromedioBajo(plat: Plataforma)
+    minimo = 65.0
+    Para cada curso en ValoresDe(plat.cursos) Hacer
+        Para cada estudiante en curso.estudiantes Hacer
+            promedio = CalcularPromedioFinalCurso(curso, estudiante.id_usuario)
+            Si promedio < minimo Entonces
+                Escribir MostrarInfoUsuario(estudiante) + " | Promedio Final: " + promedio
+                Escribir "    Desglose de notas: "
+                Para cada evaluacion en curso.evaluaciones Hacer
+                    Escribir "    - " + evaluacion.titulo + " (" + (evaluacion.ponderacion*100) + "%): Nota: " + evaluacion.calificaciones[estudiante.id_usuario]
+                FinPara
+            FinSi
+        FinPara
+    FinPara
+FinSubProceso
+
+SubProceso GenerarReporteGeneral(plat: Plataforma)
+    Para cada curso en ValoresDe(plat.cursos) Hacer
+        Para cada estudiante en curso.estudiantes Hacer
+            promedio_final = CalcularPromedioFinalCurso(curso, estudiante.id_usuario)
+            Escribir MostrarInfoUsuario(estudiante) + " | Promedio Final: " + promedio_final
+            Escribir "    Desglose de notas: "
+            Para cada evaluacion en curso.evaluaciones Hacer
+                nota_obtenida = ObtenerValorDiccionario(evaluacion.calificaciones, estudiante.id_usuario, 0)
+                estado = Si nota_obtenida > 0 Entonces "Entregada" Sino "No entregada" FinSi
+                Escribir "    - " + evaluacion.titulo + " (" + (evaluacion.ponderacion*100) + "%): Nota: " + nota_obtenida + " (" + estado + ")"
+            FinPara
+        FinPara
+    FinPara
+FinSubProceso
+
+// =========================================================
+// Lógica del Menú Principal
+// =========================================================
+
+SubProceso MenuPrincipal()
+    plataforma = CrearPlataforma()
+    Repetir
+        Escribir "=== Menú ==="
+        // Mostrar opciones
+        Leer opcion_menu
+        Segun opcion_menu Hacer
+            "1": Llamar RegistrarUsuario(...)
+            "2": Llamar CrearCurso(...)
+            "3": Llamar Inscribir(...)
+            // ... (otras opciones del menú)
+            "0": Escribir "Saliendo..."
+        FinSegun
+    Mientras opcion_menu <> "0"
+FinSubProceso
+
+// Inicio del programa
+Llamar MenuPrincipal()

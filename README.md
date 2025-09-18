@@ -1,4 +1,4 @@
-# proyecto_largo
+# Proyecto_largo
 Menú Principal
 Al iniciar el programa, verás un menú con las siguientes opciones. Para usar el sistema, solo ingresa el número de la opción y presiona Enter.
 
