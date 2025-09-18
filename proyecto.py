@@ -250,3 +250,81 @@ class Plataforma:
         if not encontrados:
             print("No hay estudiantes inscritos en ningún curso.")
         print("---------------------------------------")
+
+def menu():
+    plat = Plataforma()
+    while True:
+        print("=== Menú Plataforma Educativa ===")
+        print("1. Registrar usuario")
+        print("2. Crear curso")
+        print("3. Inscribir estudiante en curso")
+        print("4. Crear evaluación")
+        print("5. Registrar calificación")
+        print("6. Mostrar cursos")
+        print("7. Mostrar estudiantes de un curso")
+        print("8. Generar Reportes")
+        print("0. Salir")
+        opcion = input("Elige una opción: ")
+        if opcion == "1":
+            tipo = input("Tipo (estudiante/instructor): ").lower()
+            id_usuario = input("ID usuario: ")
+            nombre = input("Nombre: ")
+            correo = input("Correo: ")
+            if tipo == "estudiante":
+                carnet = input("Carnet: ")
+                plat.registrar_usuario(tipo, id_usuario, nombre, correo, carnet=carnet)
+            elif tipo == "instructor":
+                depto = input("Departamento: ")
+                plat.registrar_usuario(tipo, id_usuario, nombre, correo, departamento=depto)
+            else:
+                print("Tipo de usuario no válido. Intenta de nuevo.")
+        elif opcion == "2":
+            codigo = input("Código curso: ")
+            nombre = input("Nombre curso: ")
+            id_instructor = input("ID del instructor: ")
+            plat.crear_curso(codigo, nombre, id_instructor)
+        
+        elif opcion == "3":
+            codigo = input("Código del curso: ")
+            id_est = input("ID del estudiante a inscribir: ")
+            plat.inscribir(codigo, id_est)
+
+        elif opcion == "4":
+            codigo = input("Código del curso: ")
+            tipo = input("Tipo de evaluación (examen/tarea): ").lower()
+            id_eval = input("ID de la evaluación: ")
+            titulo = input("Título: ")
+            ponderacion = float(input("Ponderacion (ej. 0.5): "))
+            plat.crear_evaluacion(codigo, tipo, id_eval, titulo, ponderacion)
+
+        elif opcion == "5":
+            codigo = input("Código del curso: ")
+            id_eval = input("ID de la evaluación: ")
+            id_est = input("ID del estudiante: ")
+            try:
+                nota = float(input("Nota (0-100): "))
+                plat.registrar_calificacion(codigo, id_eval, id_est, nota)
+            except ValueError:
+                print("Entrada de nota no válida. Debe ser un número.")
+        elif opcion == "6":
+            plat.mostrar_cursos()
+        elif opcion == "7":
+            codigo = input("Código del curso: ")
+            plat.mostrar_estudiantes(codigo)
+        elif opcion == "8":
+            print("--- Opciones de Reporte ---")
+            print("A. Reporte de Bajo Rendimiento")
+            print("B. Reporte General de Estudiantes")
+            opcion_reporte = input("Elige una opción: ").upper()
+            if opcion_reporte == "A":
+                plat.generar_reporte_promedio_bajo()
+            elif opcion_reporte == "B":
+                plat.generar_reporte_general()
+            else:
+                print("Opción de reporte no válida.")
+        elif opcion == "0":
+            print("Saliendo del sistema...")
+            break
+        else:
+            print("Opción no válida. Por favor, elige una opción del menú.")
+menu()
