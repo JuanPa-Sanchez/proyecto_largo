@@ -20,3 +20,13 @@ class Estudiante(Usuario):
 
     def mostrar_info(self):
         return f"Estudiante: {self.nombre}, Carnet: {self.carnet}"
+    
+    #clase instructor hereda de usuario
+class Instructor(Usuario):
+    def __init__(self, id_usuario, nombre, correo, **kwargs):
+        #Extrae 'departamento' de kwargs antes de pasarlo a la clase base
+        self.departamento = kwargs.pop('departamento', None)
+        super().__init__(id_usuario, nombre, correo, **kwargs)
+
+    def mostrar_info(self):
+        return f"Instructor: {self.nombre}, Depto: {self.departamento}"
