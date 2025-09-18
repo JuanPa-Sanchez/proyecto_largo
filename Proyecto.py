@@ -53,3 +53,13 @@ class Evaluacion:
     def calcular_nota_ponderada(self, id_estudiante):
         # Calcula la nota del estudiante ponderada por la ponderacion de la evaluación.
         return self.calificaciones.get(id_estudiante, 0) * self.ponderacion
+    
+    #clase examen hereda de evaluacion
+class Examen(Evaluacion):
+    def __init__(self, id_eval, titulo, ponderacion):
+        super().__init__(id_eval, titulo, ponderacion)
+
+#clase tarea hereda de evaluacion
+class Tarea(Evaluacion):
+    def __init__(self, id_eval, titulo, ponderacion):
+        super().__init__(id_eval, titulo, ponderacion)
