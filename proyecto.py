@@ -1,3 +1,16 @@
+#clase base usuario
+class Usuario:
+    def __init__(self, id_usuario, nombre, correo, **kwargs):
+        self.id_usuario = id_usuario
+        self.nombre = nombre
+        self.correo = correo
+        #Usa setattr para asignar cualquier otro atributo pasado en kwargs
+        for clave, valor in kwargs.items():
+            setattr(self, clave, valor)
+
+    def mostrar_info(self):
+        return f"{self.id_usuario} - {self.nombre} - {self.correo}"
+    
 #clase plataforma general
 class Plataforma:
     def __init__(self):
